@@ -1,10 +1,5 @@
 #include "K8SClient.h"
 #include "K8SParams.h"
-#include <queue>
-#include <mutex>
-#include <atomic>
-#include <thread>
-#include <condition_variable>
 #include <boost/asio/posix/stream_descriptor.hpp>
 #include <boost/asio/ssl/stream.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -228,26 +223,52 @@ private:
 
     void doWaitNextTask()
     {
-        doWatchEvent();
+        doWatchStream();
+        doWatchNotify();
     }
 
-    void doWatchEvent()
+    void doWatchNotify()
     {
         pipeReadStream_.async_read_some(notifyBufferWrapper_,
                 [this](const boost::system::error_code& ec, std::size_t transferred)
                 {
-                    afterWatchEvent(ec);
+                    afterWatchNotify(ec);
                 });
     }
 
-    void afterWatchEvent(const boost::system::error_code& ec)
+    void afterWatchNotify(const boost::system::error_code& ec)
     {
         if (ec && ec != asio::error::operation_aborted)
         {
             throw std::runtime_error(
                     std::string("fatal error occurred while reading pipeReadStream :").append(ec.message()));
         }
+        if (stream_ != nullptr)
+        {
+            stream_->next_layer().cancel();
+        }
         doWork();
+    }
+
+    void doWatchStream()
+    {
+        if (stream_ != nullptr)
+        {
+            stream_->async_read_some(notifyBufferWrapper_,
+                    [this](const boost::system::error_code& ec, std::size_t bytes_transferred)
+                    {
+                        afterWatchStream(ec, bytes_transferred);
+                    });
+        }
+    }
+
+    void afterWatchStream(const boost::system::error_code& ec, std::size_t)
+    {
+        if (ec && ec == asio::error::operation_aborted)
+        {
+            return;
+        }
+        stream_.reset();
     }
 
     void afterSocketFail(const std::string& message)
