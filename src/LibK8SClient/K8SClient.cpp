@@ -247,10 +247,6 @@ private:
             throw std::runtime_error(
                     std::string("fatal error occurred while reading pipeReadStream :").append(ec.message()));
         }
-        if (stream_ != nullptr)
-        {
-            stream_->next_layer().cancel();
-        }
         doWork();
     }
 

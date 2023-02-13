@@ -30,7 +30,7 @@ type TServerServant struct {
 	Connection int32  `json:"connection"`
 	Capacity   int32  `json:"capacity"`
 	Timeout    int32  `json:"timeout"`
-	IsTars      bool   `json:"isTars"`
+	IsTars     bool   `json:"isTars"`
 	IsTcp      bool   `json:"isTcp"`
 }
 
@@ -171,7 +171,7 @@ type TServerK8S struct {
 	Resources       k8sCoreV1.ResourceRequirements      `json:"resources,omitempty"`
 	UpdateStrategy  k8sAppsV1.StatefulSetUpdateStrategy `json:"updateStrategy"`
 	ImagePullPolicy k8sCoreV1.PullPolicy                `json:"imagePullPolicy"`
-	LauncherType    tarsMeta.LauncherType                `json:"launcherType"`
+	LauncherType    tarsMeta.LauncherType               `json:"launcherType"`
 }
 
 type TK8SHostPort struct {
@@ -215,7 +215,7 @@ type TServerNormal struct {
 type TServerSubType string
 
 const (
-	TARS    TServerSubType = "tars"
+	TARS   TServerSubType = "tars"
 	Normal TServerSubType = "normal"
 )
 
@@ -224,7 +224,7 @@ type TServerSpec struct {
 	Server    string          `json:"server"`
 	SubType   TServerSubType  `json:"subType"`
 	Important int32           `json:"important"`
-	Tars       *TServerTars     `json:"tars,omitempty"`
+	Tars      *TServerTars    `json:"tars,omitempty"`
 	Normal    *TServerNormal  `json:"normal,omitempty"`
 	K8S       TServerK8S      `json:"k8s"`
 	Release   *TServerRelease `json:"release,omitempty"`
@@ -258,7 +258,7 @@ type TEndpointSpec struct {
 	Server    string          `json:"server"`
 	SubType   TServerSubType  `json:"subType"`
 	Important int32           `json:"important"`
-	Tars       *TServerTars     `json:"tars,omitempty"`
+	Tars      *TServerTars    `json:"tars,omitempty"`
 	Normal    *TServerNormal  `json:"normal,omitempty"`
 	HostPorts []*TK8SHostPort `json:"hostPorts,omitempty"`
 	Release   *TServerRelease `json:"release,omitempty"`
@@ -496,7 +496,7 @@ type TImage struct {
 	ImageType            string           `json:"imageType"`
 	SupportedType        []string         `json:"supportedType,omitempty"`
 	Releases             []*TImageRelease `json:"releases"`
-	Default              *string          `json:"default"`
+	Default              *string          `json:"default,omitempty"`
 	Build                *TImageBuild     `json:"build,omitempty"`
 	Mark                 string           `json:"mark"`
 }
@@ -542,12 +542,12 @@ type TFrameworkTarsEndpoint struct {
 type TFrameworkConfig struct {
 	k8sMetaV1.TypeMeta   `json:",inline"`
 	k8sMetaV1.ObjectMeta `json:"metadata,omitempty"`
-	ImageBuild           TFrameworkImageBuild                `json:"imageBuild"`
-	ImageRegistry        TFrameworkImageRegistry             `json:"imageRegistry"`
-	RecordLimit          TFrameworkRecordLimit               `json:"recordLimit"`
-	NodeImage            TFrameworkNodeImage                 `json:"nodeImage"`
+	ImageBuild           TFrameworkImageBuild                 `json:"imageBuild"`
+	ImageRegistry        TFrameworkImageRegistry              `json:"imageRegistry"`
+	RecordLimit          TFrameworkRecordLimit                `json:"recordLimit"`
+	NodeImage            TFrameworkNodeImage                  `json:"nodeImage"`
 	UPChain              map[string][]*TFrameworkTarsEndpoint `json:"upChain"`
-	Expand               map[string]string                   `json:"expand"`
+	Expand               map[string]string                    `json:"expand"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
