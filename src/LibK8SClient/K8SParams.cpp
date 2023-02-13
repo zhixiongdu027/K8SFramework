@@ -21,7 +21,7 @@ static std::string loadFile(const std::string& file, size_t MAX_SIZE = 8192)
 
 struct K8SParamsIMP
 {
- public:
+public:
     static K8SParamsIMP& instance()
     {
         static K8SParamsIMP imp{};
@@ -48,14 +48,14 @@ struct K8SParamsIMP
         return _namespace;
     }
 
-    asio::ssl::context& sslContext()
+    boost::asio::ssl::context& sslContext()
     {
         return _sslContext;
     };
 
- private:
+private:
     K8SParamsIMP()
-        : _sslContext(asio::ssl::context::sslv23_client)
+            : _sslContext(boost::asio::ssl::context::sslv23_client)
     {
         auto pHost = getenv(KubernetesServiceHostEnv);
         if (pHost == nullptr)
@@ -73,11 +73,11 @@ struct K8SParamsIMP
 
         _token = loadFile(TokenFile);
         _namespace = loadFile(NamespaceFile);
-        _sslContext.add_certificate_authority(asio::buffer(loadFile(CaFile)));
+        _sslContext.add_certificate_authority(boost::asio::buffer(loadFile(CaFile)));
     }
 
- private:
-    asio::ssl::context _sslContext;
+private:
+    boost::asio::ssl::context _sslContext;
     std::string _token{};
     std::string _apiServerHost{};
     std::string _namespace{};
@@ -99,7 +99,7 @@ const std::string& K8SParams::Namespace()
     return K8SParamsIMP::instance().Namespace();
 }
 
-asio::ssl::context& K8SParams::SSLContext()
+boost::asio::ssl::context& K8SParams::SSLContext()
 {
     return K8SParamsIMP::instance().sslContext();
 }

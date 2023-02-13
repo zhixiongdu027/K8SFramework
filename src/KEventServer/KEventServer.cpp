@@ -1,4 +1,4 @@
-#include "KEventServer.h"
+﻿#include "KEventServer.h"
 #include "K8SWatchCallback.h"
 #include "K8SClient.h"
 #include "K8SWatcher.h"
@@ -53,13 +53,13 @@ void KEventServer::initialize()
     K8SWatchCallback::setESIndex(index);
 
     auto age = config.get("/tars/elk/age<kevent>", "3d");
-
+    const auto& _template = index;
     const auto& pattern = index;
     const auto& policy = index;
 
     ESHelper::setAddressByTConfig(config);
     ESHelper::createESPolicy(policy, age);
-    ESHelper::createESDataStreamTemplate(index, pattern, policy);
+    ESHelper::createESDataStreamTemplate(_template, pattern, policy);
 
     createK8SContext();
     if (!K8SWatcher::instance().waitSync(std::chrono::seconds(30)))

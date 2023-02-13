@@ -6,9 +6,16 @@ const TarsNodeLabel = "tars.io/node"             // 此标签表示 该节点可
 const (
 	TServerAppLabel  = "tars.io/ServerApp"
 	TServerNameLabel = "tars.io/ServerName"
-	TSubTypeLabel    = "tars.io/SubType"
-	TServerIdLabel   = "tars.io/ServerID"
-	TTemplateLabel   = "tars.io/Template"
+
+	DCacheAppLabel    = "tars.io/DCacheApp"
+	DCacheModuleLabel = "tars.io/DCacheModule"
+	DCacheServerLabel = "tars.io/DCacheServer"
+	DCacheGroupLabel  = "tars.io/DCacheGroup"
+	DCacheRunnerLabel = "tars.io/DCacheRunner"
+
+	TSubTypeLabel  = "tars.io/SubType"
+	TServerIdLabel = "tars.io/ServerID"
+	TTemplateLabel = "tars.io/Template"
 
 	TTemplateParentLabel = "tars.io/Parent"
 

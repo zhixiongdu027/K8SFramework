@@ -71,7 +71,8 @@ static void postReadinessGate()
     for (auto i = 0; i < 3; ++i)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
-        auto postReadinessRequest = K8SClient::instance().postRequest(K8SClientRequestMethod::StrategicMergePatch, setActiveUrl, setActiveBody);
+        auto postReadinessRequest = K8SClient::instance().postRequest(K8SClientRequestMethod::StrategicMergePatch,
+                setActiveUrl, setActiveBody);
         bool finish = postReadinessRequest->waitFinish(std::chrono::seconds(2));
         if (!finish)
         {
@@ -81,7 +82,9 @@ static void postReadinessGate()
 
         if (postReadinessRequest->state() != Done)
         {
-            TLOGERROR("Update Registry Server State To \"Active/Active\" Error: " << postReadinessRequest->stateMessage() << std::endl);
+            TLOGERROR(
+                    "Update Registry Server State To \"Active/Active\" Error: " << postReadinessRequest->stateMessage()
+                                                                                << std::endl);
             continue;
         }
         TLOGINFO("Update Registry Server State To \"Active/Active\" Success" << std::endl);

@@ -1,5 +1,4 @@
-﻿#ifndef _CONFIG_IMP_H_
-#define _CONFIG_IMP_H_
+﻿#pragma once
 
 #include "servant/ConfigF.h"
 
@@ -7,7 +6,7 @@ using namespace tars;
 
 class ConfigImp : public Config
 {
- public:
+public:
     /**
      *
      */
@@ -40,7 +39,7 @@ class ConfigImp : public Config
     *
     * return  : 配置文件内容
     */
-    int ListConfig(const string& app, const string& server, vector<string>& vf, CurrentPtr current) override;
+    int ListConfig(const std::string& app, const std::string& server, vector<string>& vf, CurrentPtr current) override;
 
     /**
      * 加载配置文件
@@ -50,7 +49,8 @@ class ConfigImp : public Config
      *
      * return  : 配置文件内容
      */
-    int loadConfig(const std::string& app, const std::string& server, const std::string& filename, string& config, CurrentPtr current) override;
+    int loadConfig(const std::string& app, const std::string& server, const std::string& filename, string& config,
+            CurrentPtr current) override;
 
     /**
      * 根据ip获取配置
@@ -61,7 +61,9 @@ class ConfigImp : public Config
      *
      * @return int
      */
-    int loadConfigByHost(const string& appServerName, const string& filename, const string& host, string& config, CurrentPtr current) override;
+    int loadConfigByHost(const std::string& appServerName, const std::string& filename, const std::string& host,
+            string& config,
+            CurrentPtr current) override;
 
     /**
      *
@@ -72,7 +74,9 @@ class ConfigImp : public Config
      *
      * @return int
      */
-    int checkConfig(const string& appServerName, const string& filename, const string& host, string& result, CurrentPtr current) override;
+    int
+    checkConfig(const std::string& appServerName, const std::string& filename, const std::string& host, string& result,
+            CurrentPtr current) override;
 
     /**
     * 获取配置文件列表
@@ -108,8 +112,5 @@ class ConfigImp : public Config
     * @param[out] vf  获取到的文件名称列表
     * @return int 0: 成功, -1:失败
     **/
-    Int32 ListAllConfigByInfo(const GetConfigListInfo& configInfo, vector<std::string>& vf, CurrentPtr current) override;
+    int ListAllConfigByInfo(const GetConfigListInfo& configInfo, vector<std::string>& vf, CurrentPtr current) override;
 };
-
-#endif
-

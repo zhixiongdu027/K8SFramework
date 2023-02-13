@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <asio/ssl/context.hpp>
+#include <boost/asio/ssl/context.hpp>
 
 struct K8SParams
 {
@@ -13,5 +13,5 @@ struct K8SParams
 
     static const std::string& Namespace();
 
-    static asio::ssl::context& SSLContext();
+    static boost::asio::ssl::context& SSLContext();
 };

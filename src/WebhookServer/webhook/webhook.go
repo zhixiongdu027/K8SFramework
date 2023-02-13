@@ -107,7 +107,7 @@ func selfSigneCert() (*tls.Certificate, error) {
 		KeyUsage:    x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign | x509.KeyUsageKeyEncipherment,
 		ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageClientAuth},
 		NotBefore:   time.Now(),
-		NotAfter:    time.Now().AddDate(1, 1, 1),
+		NotAfter:    time.Now().AddDate(3, 1, 1),
 		IsCA:        false,
 		DNSNames:    []string{commonName},
 	}

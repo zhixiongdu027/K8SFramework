@@ -12,7 +12,7 @@ import (
 
 func main() {
 	stopCh := make(chan struct{})
-	err := tarsRuntime.CreateContext("", "",true)
+	err := tarsRuntime.CreateContext("", "", false)
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -34,6 +34,10 @@ func main() {
 	}
 
 	tarsRuntime.Factories.Start(stopCh)
+
+	for _, c := range controllers {
+		go c.Run(stopCh)
+	}
 
 	callbacks := leaderelection.LeaderCallbacks{
 		OnStartedLeading: func(ctx context.Context) {
