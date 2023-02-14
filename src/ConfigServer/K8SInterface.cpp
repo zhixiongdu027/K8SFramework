@@ -4,6 +4,7 @@
 #include "K8SClient.h"
 #include "Storage.h"
 #include "TCodec.h"
+#include <util/tc_common.h>
 #include <sstream>
 #include <set>
 
@@ -11,24 +12,79 @@ constexpr int REQUEST_OVERTIME = 3; // seconds
 constexpr int MAX_RETIES = 3;
 constexpr char MultiConfigSeparator[] = "\r\n\r\n";
 
-static int getHostSeq(const std::string& host)
+static int getHostSeq(const std::string& host, const std::string& app, const std::string& server)
 {
-    int seq = -1;
-    if (!host.empty())
+    if (host.empty())
     {
-        Storage::getSeqMap([host, &seq](const std::unordered_map<std::string, int>& seqMap)mutable
-        {
-            auto iterator = seqMap.find(host);
-            if (iterator != seqMap.end())
-            {
-                seq = iterator->second;
-            }
-        });
+        return -1;
     }
-    return seq;
+
+    int seq = -1;
+    Storage::getSeqMap([host, &seq](const std::unordered_map<std::string, int>& seqMap)mutable
+    {
+        auto iterator = seqMap.find(host);
+        if (iterator != seqMap.end())
+        {
+            seq = iterator->second;
+        }
+    });
+
+    if (seq != -1)
+    {
+        return seq;
+    }
+
+    /*
+      if host match pattern “app-server-%d” or “app-server-%d.app-server”,
+      we should extract "%d" as pod seq
+     */
+
+    auto prefix = tars::TC_Common::lower(app) + "-" + tars::TC_Common::lower(server);
+    auto pos = prefix.size();
+    if (host.size() - pos < 2)
+    {
+        return -1;
+    }
+
+    if (host.compare(0, pos, prefix) != 0)
+    {
+        return -1;
+    }
+
+    if (host[pos] != '-')
+    {
+        return -1;
+    }
+
+    auto d = 0;
+    for (pos += 1; pos != host.size(); ++pos)
+    {
+        auto c = host[pos];
+        if (c >= '0' && c <= '9')
+        {
+            d = d * 10 + c - '0';
+            continue;
+        }
+        if (c == '.')
+        {
+            break;
+        }
+    }
+
+    if (pos == host.size())
+    {
+        return d;
+    }
+
+    if (host.compare(pos + 1, prefix.size(), prefix) != 0)
+    {
+        return -1;
+    }
+
+    return d;
 }
 
-static std::shared_ptr<K8SClientRequest> doK8SRequest(const std::string& head)
+static std::shared_ptr <K8SClientRequest> doK8SRequest(const std::string& head)
 {
     auto task = K8SClient::instance().postRequest(K8SClientRequestMethod::Get, head, "");
     bool finish = task->waitFinish(std::chrono::seconds(REQUEST_OVERTIME));
@@ -50,7 +106,7 @@ static std::shared_ptr<K8SClientRequest> doK8SRequest(const std::string& head)
 }
 
 void K8SInterface::listConfig(const std::string& app, const std::string& server, const std::string& host,
-        std::vector<std::string>& vf)
+        std::vector <std::string>& vf)
 {
     std::ostringstream stream;
     stream << "/apis/k8s.tars.io/v1beta3/namespaces/" << K8SParams::Namespace()
@@ -64,7 +120,7 @@ void K8SInterface::listConfig(const std::string& app, const std::string& server,
     auto&& responseJson = req->responseJson();
     auto&& items = responseJson.at("items");
 
-    std::set<std::string> configNames{};
+    std::set <std::string> configNames{};
     for (auto&& config: items.get_array())
     {
         auto pConfigName = config.at("configName");
@@ -78,7 +134,7 @@ void
 K8SInterface::loadConfig(const std::string& app, const std::string& server, const std::string& fileName,
         const std::string& host, std::string& result)
 {
-    int podSeq = getHostSeq(host);
+    int podSeq = getHostSeq(host, app, server);
     std::ostringstream stream;
     stream << "/apis/k8s.tars.io/v1beta3/namespaces/" << K8SParams::Namespace()
            << "/tconfigs?labelSelector="

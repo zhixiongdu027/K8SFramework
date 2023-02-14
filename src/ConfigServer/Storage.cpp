@@ -6,16 +6,29 @@
 
 static int extractPodSeq(const std::string& sPodName, const std::string& sGenerateName)
 {
-    try
-    {
-        assert(sPodName.size() > sGenerateName.size());
-        auto sPodSeq = sPodName.substr(sGenerateName.size());
-        return std::stoi(sPodSeq, nullptr, 10);
-    }
-    catch (std::exception& exception)
+    auto pos = sGenerateName.size();
+    if (pos == sPodName.size())
     {
         return -1;
     }
+
+    if (sPodName.compare(0, pos, sGenerateName) != 0)
+    {
+        return -1;
+    }
+
+    auto d = 0;
+    for (; pos != sPodName.size(); ++pos)
+    {
+        auto c = sPodName[pos];
+        if (c >= '0' && c <= '9')
+        {
+            d = d * 10 + c - '0';
+            continue;
+        }
+        return -1;
+    }
+    return pos == sPodName.size() ? d : -1;
 }
 
 class StorageImp
@@ -44,6 +57,12 @@ void Storage::onPodAdded(const boost::json::value& v, K8SWatchEventDrive drive)
 {
     try
     {
+        VAR_FROM_JSON(std::string, ip, v.at_pointer("/status/podIP"));
+        if (!ip.empty())
+        {
+            return;
+        }
+
         VAR_FROM_JSON(std::string, generate, v.at_pointer("/metadata/generateName"));
         if (generate.empty())
         {
@@ -62,27 +81,14 @@ void Storage::onPodAdded(const boost::json::value& v, K8SWatchEventDrive drive)
             return;
         }
 
-        auto domain = name + "." + generate.substr(0, generate.size() - 1);
-
-        VAR_FROM_JSON(std::string, ip, v.at_pointer("/status/podIP"));
         if (drive == K8SWatchEventDrive::List)
         {
-            StorageImp::instance().cacheSeqMap_[name] = seq;
-            StorageImp::instance().cacheSeqMap_[domain] = seq;
-            if (!ip.empty())
-            {
-                StorageImp::instance().cacheSeqMap_[ip] = seq;
-            }
+            StorageImp::instance().cacheSeqMap_[ip] = seq;
         }
         else if (drive == K8SWatchEventDrive::Watch)
         {
             StorageImp::instance().mutex_.writeLock();
-            StorageImp::instance().seqMap_[name] = seq;
-            StorageImp::instance().seqMap_[domain] = seq;
-            if (!ip.empty())
-            {
-                StorageImp::instance().seqMap_[ip] = seq;
-            }
+            StorageImp::instance().seqMap_[ip] = seq;
             StorageImp::instance().mutex_.unWriteLock();
         }
     }
@@ -100,30 +106,13 @@ void Storage::onPodDelete(const boost::json::value& v)
 {
     try
     {
-        VAR_FROM_JSON(std::string, generate, v.at_pointer("/metadata/generateName"));
-        if (generate.empty())
-        {
-            return;
-        }
-
-        VAR_FROM_JSON(std::string, name, v.at_pointer("/metadata/name"));
-        if (name.empty())
-        {
-            return;
-        }
-
-        auto domain = name + "." + generate.substr(0, generate.size() - 1);
-
         VAR_FROM_JSON(std::string, ip, v.at_pointer("/status/podIP"));
-
-        StorageImp::instance().mutex_.writeLock();
-        StorageImp::instance().seqMap_.erase(name);
-        StorageImp::instance().seqMap_.erase(domain);
         if (!ip.empty())
         {
+            StorageImp::instance().mutex_.writeLock();
             StorageImp::instance().seqMap_.erase(ip);
+            StorageImp::instance().mutex_.unWriteLock();
         }
-        StorageImp::instance().mutex_.unWriteLock();
     }
     catch (...)
     {
