@@ -32,7 +32,7 @@ public:
     std::function<void(const boost::json::value&, K8SWatchEventDrive)> onAdded;
     std::function<void(const boost::json::value&)> onDeleted;
     std::function<void(const boost::json::value&)> onModified;
-    std::function<void(const boost::system::error_code&, const std::string&)> onError;;
+    std::function<bool(const boost::system::error_code&, const std::string&)> onError;;
 
     std::string watchUri() const;
 

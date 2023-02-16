@@ -6,12 +6,11 @@
 #include "K8SParams.h"
 #include "K8SWatchCallback.h"
 
-static void onError(const std::error_code& ec, const std::string& msg)
+static bool onError(const std::error_code& ec, const std::string& msg)
 {
     TLOGERROR(ec.message() << ": " << msg << std::endl);
     std::cout << ec.message() << ": " << msg << std::endl;
-    exit(-1);
-    //fixme, maybe we should re watch.
+    return false;
 }
 
 static void createK8SContext()

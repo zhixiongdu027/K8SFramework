@@ -84,7 +84,12 @@ private:
         conditionVariable_.notify_all();
         if (callback_.onError)
         {
-            return callback_.onError(ec, message);
+            auto again = callback_.onError(ec, message);
+            if (again)
+            {
+                K8SWatcher::instance().addWatch(callback_);
+            }
+            return;
         }
         std::cout << "K8SWatcher Error, Reason: " << ec.message() << ", Message: " << message << std::endl;
     }
@@ -407,7 +412,7 @@ private:
     asio::io_context& ioContext_;
     std::atomic<int>& waitSyncCount_;
     std::condition_variable& conditionVariable_;
-    beast::ssl_stream <beast::tcp_stream> stream_;
+    beast::ssl_stream<beast::tcp_stream> stream_;
     K8SWatcherSetting callback_;
     std::string requestContent_{};
     json::stream_parser jsonStreamParser_{};

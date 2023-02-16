@@ -5,11 +5,11 @@
 #include "K8SParams.h"
 #include "ESHelper.h"
 
-static void onError(const std::error_code& ec, const std::string& msg)
+static bool onError(const std::error_code& ec, const std::string& msg)
 {
     TLOGERROR(ec.message() << ": " << msg << std::endl);
     std::cout << ec.message() << ": " << msg << std::endl;
-    exit(-1);
+    return true;
 }
 
 static void createK8SContext()
