@@ -5,7 +5,7 @@
 
 struct K8SParams
 {
-    static const std::string& ClientToken();
+    static const std::string ClientToken();
 
     static const std::string& APIServerHost();
 

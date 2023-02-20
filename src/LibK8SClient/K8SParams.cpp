@@ -1,6 +1,6 @@
-#include <fstream>
 #include "K8SParams.h"
-#include <iostream>
+#include <fstream>
+#include <thread>
 
 constexpr char KubernetesServiceHostEnv[] = "KUBERNETES_SERVICE_HOST";
 constexpr char KubernetesServicePortEnv[] = "KUBERNETES_SERVICE_PORT";
@@ -71,14 +71,12 @@ private:
         }
         _apiServerPort = std::stoi(pPort);
 
-        _token = loadFile(TokenFile);
         _namespace = loadFile(NamespaceFile);
         _sslContext.add_certificate_authority(boost::asio::buffer(loadFile(CaFile)));
     }
 
 private:
     boost::asio::ssl::context _sslContext;
-    std::string _token{};
     std::string _apiServerHost{};
     std::string _namespace{};
     int _apiServerPort{};
@@ -104,7 +102,17 @@ boost::asio::ssl::context& K8SParams::SSLContext()
     return K8SParamsIMP::instance().sslContext();
 }
 
-const std::string& K8SParams::ClientToken()
+const std::string K8SParams::ClientToken()
 {
-    return K8SParamsIMP::instance().bindToken();
+    constexpr int MAX_TRIES = 3;
+    for (auto i = 0; i < MAX_TRIES; ++i)
+    {
+        auto token = loadFile(TokenFile);
+        if (!token.empty())
+        {
+            return token;
+        }
+        std::this_thread::sleep_for(std::chrono::microseconds(10));
+    }
+    return "";
 }
