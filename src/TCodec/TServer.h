@@ -95,14 +95,13 @@ ENCODE_STRUCT_TO_JSON(TServer, s, j)
               "metadata",   {
                                     { "namespace", K8SParams::Namespace() },
                                     { "name",   s.resourceName },
-                                    { "annotation", boost::json::object{}}
                             }
             },
             {
               "spec",       {
                                     { "app",       s.appName },
                                     { "server", s.serverName },
-                                    { "subType",    "tars" },
+                                    { "subType", "tars" },
                                     { "tars", boost::json::object{
                                             { "template",    s.templateName },
                                             { "profile",     s.profileContent },
@@ -118,22 +117,57 @@ ENCODE_STRUCT_TO_JSON(TServer, s, j)
                             }
             }
     };
-    if (s.maxReplicas != 0)
+    if (s.maxReplicas > 0)
     {
-        j.at_pointer("/metadata/annotation").get_object().insert(
-                {{ "tars.io/MaxReplicas", std::to_string(s.maxReplicas) }});
+        boost::system::error_code ec{};
+        auto pointer = j.find_pointer("/metadata/annotation", ec);
+        if (pointer == nullptr)
+        {
+            j.at("metadata").get_object()["annotation"] = boost::json::object{
+                    { "tars.io/MaxReplicas", std::to_string(s.maxReplicas) }};
+        }
+        else
+        {
+            pointer->get_object().insert({{ "tars.io/MaxReplicas", std::to_string(s.maxReplicas) }});
+        }
+    }
+    if (s.minReplicas > 0)
+    {
+        boost::system::error_code ec{};
+        auto pointer = j.find_pointer("/metadata/annotation", ec);
+        if (pointer == nullptr)
+        {
+            j.at("metadata").get_object()["annotation"] = boost::json::object{
+                    { "tars.io/MinReplicas", std::to_string(s.minReplicas) }};
+        }
+        else
+        {
+            pointer->get_object().insert({{ "tars.io/MinReplicas", std::to_string(s.minReplicas) }});
+        }
     }
     if (s.autoRelease)
     {
-        j.at_pointer("/metadata/annotation").get_object().insert(
-                {{ "tars.io/AutoRelease", "true" }});
-    }
-    if (s.hostIPC)
-    {
-        j.at_pointer("/spec/k8s").get_object().insert({{ "hostIPC", true }});
+        boost::system::error_code ec{};
+        auto pointer = j.find_pointer("/metadata/annotation", ec);
+        if (pointer == nullptr)
+        {
+            j.at("metadata").get_object()["annotation"] = boost::json::object{{ "tars.io/AutoRelease", "true" }};
+        }
+        else
+        {
+            pointer->get_object().insert({{ "tars.io/AutoRelease", "true" }});
+        }
     }
 
     if (!s.runningHost.empty())
     {
+        j.at_pointer("/spec/k8s").get_object().insert({{ "abilityAffinity", "None" }});
+        j.at_pointer("/spec/k8s").get_object().insert({{ "nodeSelector", boost::json::array{
+                {{ "key", "kubernetes.io/hostname" }, { "operator", "In" }, { "values", s.runningHost }}}}});
+    }
+
+    if (s.hostIPC)
+    {
+        j.at_pointer("/spec/k8s").get_object().insert({{ "hostIPC", true }});
     }
 }
