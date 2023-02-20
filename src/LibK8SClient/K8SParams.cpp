@@ -10,11 +10,11 @@ constexpr char NamespaceFile[] = "/var/run/secrets/kubernetes.io/serviceaccount/
 
 static std::string loadFile(const std::string& file, size_t MAX_SIZE = 8192)
 {
-    auto fs = fopen(file.c_str(), "r");
+    auto fs = ::fopen(file.c_str(), "r");
     if (fs == nullptr)
-    { return ""; }
+    {return "";}
     std::unique_ptr<char[]> p(new char[MAX_SIZE]);
-    auto read_size = fread(p.get(), 1, MAX_SIZE, fs);
+    auto read_size = ::fread(p.get(), 1, MAX_SIZE, fs);
     ::fclose(fs);
     return read_size > 0 ? std::string{ p.get(), read_size } : "";
 }
@@ -55,7 +55,7 @@ public:
 
 private:
     K8SParamsIMP()
-            : _sslContext(boost::asio::ssl::context::sslv23_client)
+            :_sslContext(boost::asio::ssl::context::sslv23_client)
     {
         auto pHost = getenv(KubernetesServiceHostEnv);
         if (pHost == nullptr)

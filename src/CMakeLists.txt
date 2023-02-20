@@ -30,6 +30,7 @@ add_subdirectory(LibESClient)
 
 include_directories(./LibK8SClient/)
 include_directories(./LibESClient/)
+include_directories(./TCodec/)
 add_subdirectory(ConfigServer)
 add_subdirectory(NodeServer)
 add_subdirectory(NotifyServer)

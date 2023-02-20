@@ -58,17 +58,17 @@ std::string K8SWatcherSetting::watchUri() const
     return os.str();
 }
 
-class K8SWatcherSession : public std::enable_shared_from_this<K8SWatcherSession>
+class K8SWatcherSession :public std::enable_shared_from_this<K8SWatcherSession>
 {
 public:
     explicit K8SWatcherSession(asio::io_context& ioContext, std::atomic<int>& waitSyncCount,
             std::condition_variable& conditionVariable,
             const K8SWatcherSetting& callback)
-            : ioContext_(ioContext),
-              waitSyncCount_(waitSyncCount),
-              conditionVariable_(conditionVariable),
-              stream_(ioContext_, K8SParams::SSLContext()),
-              callback_(callback)
+            :ioContext_(ioContext),
+             waitSyncCount_(waitSyncCount),
+             conditionVariable_(conditionVariable),
+             stream_(ioContext_, K8SParams::SSLContext()),
+             callback_(callback)
     {
     }
 
@@ -113,7 +113,7 @@ private:
         asio::ip::tcp::endpoint endpoint(asio::ip::address::from_string(apiServerIP), apiServerPort);
         auto self = shared_from_this();
         stream_.next_layer().async_connect(endpoint, [self](const boost::system::error_code& ec)
-        { self->afterConnect(ec); });
+        {self->afterConnect(ec);});
     }
 
     void afterConnect(const boost::system::error_code& ec)
@@ -160,7 +160,7 @@ private:
         auto self = shared_from_this();
         asio::async_write(stream_, asio::buffer(requestContent_),
                 [self](const boost::system::error_code& ec, size_t transferred)
-                { self->afterListRequest(ec, transferred); });
+                {self->afterListRequest(ec, transferred);});
     }
 
     void afterListRequest(const boost::system::error_code& ec, std::size_t transferred)
@@ -211,7 +211,7 @@ private:
 
         if (callback_.onAdded)
         {
-            for (auto&& item: pItems->get_array())
+            for (auto&& item:pItems->get_array())
             {
                 callback_.onAdded(item, K8SWatchEventDrive::List);
             }
@@ -260,7 +260,7 @@ private:
         auto self = shared_from_this();
         asio::async_write(stream_, asio::buffer(requestContent_),
                 [self](boost::system::error_code ec, size_t transferred)
-                { self->afterWatchRequest(ec, transferred); });
+                {self->afterWatchRequest(ec, transferred);});
     }
 
     void afterWatchRequest(const boost::system::error_code& ec, std::size_t transferred)
@@ -385,23 +385,23 @@ private:
         }
 
         callback_.newestVersion_ = boost::json::value_to<std::string>(*pResourceVersion);
-        if (strcmp(BOOKMARKTypeValue, type) == 0)
+        if (::strcmp(BOOKMARKTypeValue, type) == 0)
         {
             return;
         }
         const auto& object = document.at("object");
 
-        if (strcmp(ADDEDTypeValue, type) == 0)
+        if (::strcmp(ADDEDTypeValue, type) == 0)
         {
             callback_.onAdded(object, K8SWatchEventDrive::Watch);
             return;
         }
-        if (strcmp(UPDATETypeValue, type) == 0)
+        if (::strcmp(UPDATETypeValue, type) == 0)
         {
             callback_.onModified(object);
             return;
         }
-        if (strcmp(DELETETypeValue, type) == 0)
+        if (::strcmp(DELETETypeValue, type) == 0)
         {
             callback_.onDeleted(object);
             return;
